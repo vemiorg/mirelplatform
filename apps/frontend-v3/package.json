@@ -39,9 +39,9 @@
     "js-yaml": "^4.1.1",
     "lucide-react": "^1.14.0",
     "nanoid": "^5.1.11",
-    "react": "^19.2.5",
+    "react": "^19.2.6",
     "react-diff-viewer-continued": "^4.2.2",
-    "react-dom": "^19.2.5",
+    "react-dom": "^19.2.6",
     "react-easy-crop": "^5.5.7",
     "react-grid-layout": "^2.2.3",
     "react-hook-form": "^7.75.0",
@@ -76,7 +76,7 @@
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.10",
+    "vite": "^8.0.11",
     "vitest": "^4.1.5"
   }
 }
