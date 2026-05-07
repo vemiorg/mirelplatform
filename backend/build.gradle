@@ -67,7 +67,7 @@ dependencies {
     }
     implementation 'commons-io:commons-io:2.22.0'
     implementation 'org.freemarker:freemarker:2.3.34'
-    implementation 'com.codeborne:selenide:7.16.0'
+    implementation 'com.codeborne:selenide:7.16.1'
     implementation 'org.hibernate.orm:hibernate-core:6.6.50.Final'
     // implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0' // Managed by Spring Boot
     implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
@@ -118,7 +118,7 @@ dependencies {
     implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
 
     // AWS SDK for S3 (Cloudflare R2 互換)
-    implementation platform('software.amazon.awssdk:bom:2.44.1')
+    implementation platform('software.amazon.awssdk:bom:2.44.2')
     implementation 'software.amazon.awssdk:s3'
     
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
