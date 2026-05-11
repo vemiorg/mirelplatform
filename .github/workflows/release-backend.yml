@@ -88,9 +88,9 @@ jobs:
                   body: |
                       ## Backend Release ${{ steps.check_version.outputs.version }}
                       
-                      Docker image: `ghcr.io/vemikrs/mirelplatform-backend:latest`
+                      Docker image: `ghcr.io/vemiorg/mirelplatform-backend:latest`
                       
-                      See [Docker Build workflow](https://github.com/vemikrs/mirelplatform/actions/workflows/docker-build.yml) for image details.
+                      See [Docker Build workflow](https://github.com/vemiorg/mirelplatform/actions/workflows/docker-build.yml) for image details.
                   generate_release_notes: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

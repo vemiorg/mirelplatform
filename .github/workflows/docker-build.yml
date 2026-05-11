@@ -28,13 +28,13 @@ jobs:
                     # 1. 既存のオールインワン版（変更なし）
                     - type: all-in-one
                       dockerfile: ./Dockerfile
-                      image_name: vemikrs/mirelplatform
+                      image_name: vemiorg/mirelplatform
                       description: "Full stack (Backend + Frontend + Nginx)"
 
                     # 2. 新規のSaaS用バックエンド版
                     - type: backend-only
                       dockerfile: ./Dockerfile.backend
-                      image_name: vemikrs/mirelplatform-backend
+                      image_name: vemiorg/mirelplatform-backend
                       description: "Backend only (Spring Boot optimized for Cloud Run)"
 
         steps:
@@ -127,18 +127,18 @@ jobs:
             - name: Pull and inspect image
               run: |
                   echo "Pulling image..."
-                  docker pull ${{ env.REGISTRY }}/vemikrs/mirelplatform:latest
+                  docker pull ${{ env.REGISTRY }}/vemiorg/mirelplatform:latest
 
                   echo "Inspecting image..."
-                  docker inspect ${{ env.REGISTRY }}/vemikrs/mirelplatform:latest
+                  docker inspect ${{ env.REGISTRY }}/vemiorg/mirelplatform:latest
 
                   echo "Image history..."
-                  docker history ${{ env.REGISTRY }}/vemikrs/mirelplatform:latest
+                  docker history ${{ env.REGISTRY }}/vemiorg/mirelplatform:latest
 
             - name: Test image startup
               run: |
                   echo "Testing image startup..."
-                  docker run --rm ${{ env.REGISTRY }}/vemikrs/mirelplatform:latest bash -c "
+                  docker run --rm ${{ env.REGISTRY }}/vemiorg/mirelplatform:latest bash -c "
                     echo 'Container started successfully' && 
                     java -version
                   "
@@ -146,7 +146,7 @@ jobs:
             - name: Verify installed components
               run: |
                   echo "Verifying Java, Node.js, and pnpm..."
-                  docker run --rm --entrypoint bash ${{ env.REGISTRY }}/vemikrs/mirelplatform:latest -c "
+                  docker run --rm --entrypoint bash ${{ env.REGISTRY }}/vemiorg/mirelplatform:latest -c "
                     export NVM_DIR='/home/vscode/.nvm' && 
                     [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\" && 
                     export PATH=\"\$NVM_DIR/versions/node/v22.20.0/bin:\$PATH\" &&
@@ -164,7 +164,7 @@ jobs:
               run: |
                   echo "## All-in-One Image Verification ✅" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "Image \`${{ env.REGISTRY }}/vemikrs/mirelplatform:latest\` has been successfully verified." >> $GITHUB_STEP_SUMMARY
+                  echo "Image \`${{ env.REGISTRY }}/vemiorg/mirelplatform:latest\` has been successfully verified." >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "The image includes:" >> $GITHUB_STEP_SUMMARY
                   echo "- ☕ Java 21 (Temurin)" >> $GITHUB_STEP_SUMMARY
@@ -192,25 +192,25 @@ jobs:
             - name: Pull and inspect image
               run: |
                   echo "Pulling image..."
-                  docker pull ${{ env.REGISTRY }}/vemikrs/mirelplatform-backend:latest
+                  docker pull ${{ env.REGISTRY }}/vemiorg/mirelplatform-backend:latest
 
                   echo "Inspecting image..."
-                  docker inspect ${{ env.REGISTRY }}/vemikrs/mirelplatform-backend:latest
+                  docker inspect ${{ env.REGISTRY }}/vemiorg/mirelplatform-backend:latest
 
                   echo "Image size..."
-                  docker images ${{ env.REGISTRY }}/vemikrs/mirelplatform-backend:latest --format "{{.Size}}"
+                  docker images ${{ env.REGISTRY }}/vemiorg/mirelplatform-backend:latest --format "{{.Size}}"
 
             - name: Test Java runtime
               run: |
                   echo "Testing Java runtime..."
-                  docker run --rm --entrypoint java ${{ env.REGISTRY }}/vemikrs/mirelplatform-backend:latest -version
+                  docker run --rm --entrypoint java ${{ env.REGISTRY }}/vemiorg/mirelplatform-backend:latest -version
 
             - name: Create verification summary
               run: |
-                  IMAGE_SIZE=$(docker images ${{ env.REGISTRY }}/vemikrs/mirelplatform-backend:latest --format "{{.Size}}")
+                  IMAGE_SIZE=$(docker images ${{ env.REGISTRY }}/vemiorg/mirelplatform-backend:latest --format "{{.Size}}")
                   echo "## Backend Image Verification ✅" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "Image \`${{ env.REGISTRY }}/vemikrs/mirelplatform-backend:latest\` has been successfully verified." >> $GITHUB_STEP_SUMMARY
+                  echo "Image \`${{ env.REGISTRY }}/vemiorg/mirelplatform-backend:latest\` has been successfully verified." >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "**Image Size:** $IMAGE_SIZE (optimized for Cloud Run)" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
