@@ -49,10 +49,10 @@ public class OpenApiConfig {
                 .contact(new Contact()
                     .name("vemi/mirelplatform")
                     .email("contact@vemi.jp")
-                    .url("https://github.com/vemikrs/mirelplatform"))
+                    .url("https://github.com/vemiorg/mirelplatform"))
                 .license(new License()
                     .name("Proprietary")
-                    .url("https://github.com/vemikrs/mirelplatform/blob/master/LICENSE")))
+                    .url("https://github.com/vemiorg/mirelplatform/blob/master/LICENSE")))
             .servers(List.of(
                 new Server()
                     .url("http://localhost:" + serverPort + contextPath)

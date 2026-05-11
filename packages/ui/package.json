@@ -4,12 +4,12 @@
   "description": "mirel Design System - shadcn/ui + Radix UI wrapper",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vemikrs/mirelplatform.git",
+    "url": "https://github.com/vemiorg/mirelplatform.git",
     "directory": "packages/ui"
   },
-  "homepage": "https://github.com/vemikrs/mirelplatform/tree/master/packages/ui#readme",
+  "homepage": "https://github.com/vemiorg/mirelplatform/tree/master/packages/ui#readme",
   "bugs": {
-    "url": "https://github.com/vemikrs/mirelplatform/issues"
+    "url": "https://github.com/vemiorg/mirelplatform/issues"
   },
   "type": "module",
   "main": "./src/index.ts",
