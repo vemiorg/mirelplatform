@@ -16,6 +16,12 @@ permissions:
   contents: write
   id-token: write
 
+# 同一ワークフローの並走を抑止。master への bump push と他ワークフローの
+# rebase 競合（2026-05-11 障害）を防ぐ。
+concurrency:
+  group: release-ui-core-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     # pushイベント、またはマージされたPRの場合のみ実行
@@ -148,6 +154,25 @@ jobs:
           echo "tag_name=$FINAL_TAG" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Build
+        run: |
+          cd packages/ui
+          pnpm build
+
+      # 順序: Build → Publish → Tag。
+      # publish 失敗時に tag を残さないことで「tag だけ存在し npm に穴」状態を防ぐ
+      # (2026-05-11 障害の構造的対策)。
+      - name: Publish to npm
+        run: |
+          cd packages/ui
+          VERSION="${{ steps.check_version.outputs.version }}"
+          # Check if version already exists on npm (idempotent)
+          if npm view @mireljs/ui-core@$VERSION version 2>/dev/null; then
+            echo "Version $VERSION already published, skipping..."
+          else
+            npm publish --access public --provenance
+          fi
+
       - name: Create Tag
         run: |
           TAG_NAME="${{ steps.check_version.outputs.tag_name }}"
@@ -158,22 +183,6 @@ jobs:
           else
             git tag $TAG_NAME
             git push origin $TAG_NAME
-          fi
-
-      - name: Build
-        run: |
-          cd packages/ui
-          pnpm build
-
-      - name: Publish to npm
-        run: |
-          cd packages/ui
-          VERSION="${{ steps.check_version.outputs.version }}"
-          # Check if version already exists on npm (idempotent)
-          if npm view @mireljs/ui-core@$VERSION version 2>/dev/null; then
-            echo "Version $VERSION already published, skipping..."
-          else
-            npm publish --access public --provenance
           fi
 
       - name: Create GitHub Release
