@@ -1,6 +1,6 @@
 {
   "name": "mirelplatform",
-  "version": "3.2.76",
+  "version": "3.2.77",
   "description": "mirelplatform monorepo",
   "private": true,
   "scripts": {
