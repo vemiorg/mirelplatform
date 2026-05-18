@@ -1,7 +1,7 @@
 /* groovylint-disable-next-line CompileStatic */
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.14'
+    id 'org.springframework.boot' version '4.0.6'
     id 'io.spring.dependency-management' version '1.1.7'
     id "com.github.ben-manes.versions" version "0.54.0"
 }
@@ -40,18 +40,18 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:3.5.14'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:4.0.6'
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-batch:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-cache:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-groovy-templates:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-jdbc:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-mail:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-quartz:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-security:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:3.5.14'
-    implementation 'org.springframework.boot:spring-boot-starter-web:3.5.14'
+    implementation 'org.springframework.boot:spring-boot-starter-batch:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-cache:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-groovy-templates:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-mail:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-quartz:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-security:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:4.0.6'
+    implementation 'org.springframework.boot:spring-boot-starter-web:4.0.6'
     implementation 'org.springframework.security:spring-security-oauth2-resource-server:6.5.11-SNAPSHOT'
     implementation 'org.springframework.security:spring-security-oauth2-jose:6.5.11-SNAPSHOT'
     implementation 'org.springframework.session:spring-session-data-redis'
@@ -75,7 +75,7 @@ dependencies {
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
     
     // Redis (分散レート制限・セッション管理)
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.5.14'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:4.0.6'
     // lettuce-core: Spring Bootの依存関係管理に任せる（6.3.xはSpring Boot 3.5+と互換性なし）
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.15.2'
     
@@ -129,7 +129,7 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.springframework.batch:spring-batch-test'
     testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.14'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:4.0.6'
     // WireMock for AI client testing
     testImplementation 'org.wiremock:wiremock-standalone:3.13.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
