@@ -34,7 +34,7 @@ dependencyManagement {
     imports {
         // 順序重要: 後に宣言した BOM が優先される
         // spring-cloud-gcp が古い google-cloud-vertexai を引き込むため、spring-ai-bom を後に配置
-        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:7.4.6"
+        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:7.4.7"
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
     }
 }
@@ -118,7 +118,7 @@ dependencies {
     implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
 
     // AWS SDK for S3 (Cloudflare R2 互換)
-    implementation platform('software.amazon.awssdk:bom:2.44.4')
+    implementation platform('software.amazon.awssdk:bom:2.44.7')
     implementation 'software.amazon.awssdk:s3'
     
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
