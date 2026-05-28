@@ -99,13 +99,22 @@ export const authApi = {
   },
 
   /**
-   * Refresh access token
+   * Refresh access token.
+   * refreshToken が指定された場合は body に載せる。
+   * 未指定の場合は空 body で POST し、バックエンドが Cookie から refreshToken を読む。
    */
-  async refreshToken(refreshToken: string): Promise<TokenDto> {
+  async refreshToken(refreshToken?: string): Promise<TokenDto> {
     try {
+      const body = refreshToken ? { refreshToken } : {};
       const response = await apiClient.post<AuthenticationResponse>(
         '/auth/refresh',
-        { refreshToken }
+        body,
+        {
+          headers: {
+            // refresh 自体が 401 リトライ対象にならないよう抑制
+            'X-Mirel-Skip-Auth-Redirect': 'true',
+          },
+        }
       );
 
       return response.data.tokens;

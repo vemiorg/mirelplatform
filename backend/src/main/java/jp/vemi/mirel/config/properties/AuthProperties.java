@@ -42,7 +42,14 @@ public class AuthProperties {
 
         /**
          * リフレッシュトークン有効期限 (秒)
+         * デフォルト: 7日 (604800秒)。Cookie maxAge と一致させること。
          */
-        private long refreshExpiration = 86400;
+        private long refreshExpiration = 604800;
+
+        /**
+         * rememberMe 有効時のリフレッシュトークン有効期限 (秒)
+         * デフォルト: 90日
+         */
+        private long rememberMeRefreshExpiration = 7776000;
     }
 }

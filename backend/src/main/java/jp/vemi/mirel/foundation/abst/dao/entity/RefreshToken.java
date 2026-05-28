@@ -46,6 +46,14 @@ public class RefreshToken {
     @Column(name = "revoked_at")
     private Instant revokedAt;
 
+    /**
+     * Token rotation: このトークンを置き換えた新トークンのハッシュ。
+     * 再利用検知: revoked済みのトークンが再提示された場合、
+     * このフィールドが non-null なら theft とみなしユーザーの全トークンを revoke する。
+     */
+    @Column(name = "replaced_by_token_hash")
+    private String replacedByTokenHash;
+
     /** バージョン */
     @Version
     @Column(name = "version", nullable = false)

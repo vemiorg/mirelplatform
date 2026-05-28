@@ -28,6 +28,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
+ * Refresh token の再利用検知時にスローされる例外。
+ * 全トークン revoke をコミットする必要があるため、
+ * この例外では @Transactional のロールバックを抑制する。
+ */
+class RefreshTokenReuseException extends jp.vemi.framework.exeption.MirelValidationException {
+    RefreshTokenReuseException(String message) {
+        super(message);
+    }
+}
+
+/**
  * 認証サービス実装.
  */
 @org.springframework.stereotype.Service
@@ -498,9 +509,17 @@ public class AuthenticationServiceImpl {
     }
 
     /**
-     * トークンリフレッシュ
+     * トークンリフレッシュ（Token Rotation + 再利用検知 + Sliding Expiry）
+     *
+     * <ol>
+     *   <li>提示された refresh token を検証</li>
+     *   <li>再利用検知: revoked 済み（= 既に rotation 済み）のトークンが再提示された場合、
+     *       トークン盗難とみなしユーザーの全トークンを revoke</li>
+     *   <li>旧トークンを revoke し、新トークンを発行（rotation）</li>
+     *   <li>新トークンの有効期限は now + refreshExpiration（sliding expiry）</li>
+     * </ol>
      */
-    @Transactional
+    @Transactional(noRollbackFor = RefreshTokenReuseException.class)
     public AuthenticationResponse refresh(RefreshTokenRequest request) {
         boolean isJwtEnabled = authProperties.getJwt().isEnabled();
         if (!isJwtEnabled || jwtService == null) {
@@ -508,40 +527,67 @@ public class AuthenticationServiceImpl {
         }
         log.info("Token refresh attempt");
 
-        // RefreshToken検証
+        // RefreshToken 検索
         String tokenHash = hashToken(request.getRefreshToken());
-        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(tokenHash)
+        RefreshToken oldRefreshToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new jp.vemi.framework.exeption.MirelValidationException("Invalid refresh token"));
 
-        if (!refreshToken.isValid()) {
+        // ── 再利用検知 ──
+        // revoked 済みトークンが再提示された → 盗難の可能性 → 全トークン revoke
+        if (oldRefreshToken.getRevokedAt() != null) {
+            log.warn("Refresh token reuse detected for user: {}. Revoking all tokens.", oldRefreshToken.getUserId());
+            authEventLogger.logLoginFailure(oldRefreshToken.getUserId(),
+                    "Refresh token reuse detected (possible theft)", "unknown", "unknown");
+            revokeAllUserTokens(oldRefreshToken.getUserId());
+            throw new RefreshTokenReuseException(
+                    "Refresh token reuse detected. All sessions have been revoked for security.");
+        }
+
+        // 通常の有効性チェック（期限切れ, deleteFlag）
+        if (!oldRefreshToken.isValid()) {
             throw new jp.vemi.framework.exeption.MirelValidationException("Refresh token is expired or revoked");
         }
 
         // ユーザー取得
-        User user = userRepository.findById(refreshToken.getUserId())
+        User user = userRepository.findById(oldRefreshToken.getUserId())
                 .orElseThrow(() -> new jp.vemi.framework.exeption.MirelSystemException("User not found"));
 
         // テナント取得
         Tenant tenant = user.getTenantId() != null ? tenantRepository.findById(user.getTenantId()).orElse(null) : null;
 
-        // 新しいアクセストークン生成
-        String accessToken;
-        if (isJwtEnabled && jwtService != null) {
-            accessToken = jwtService.generateToken(
-                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                            user.getUserId(), null, List.of()));
-        } else {
-            accessToken = "session-based-auth-token";
-            log.warn("JWT is disabled. Using session-based authentication placeholder.");
-        }
+        // ── Token Rotation: 新トークン発行 + 旧トークン revoke ──
+        RefreshToken newRefreshToken = createRefreshToken(user);  // sliding expiry: expiresAt = now + refreshExpiration
+
+        // 旧トークンを revoke し、後継を記録（再利用検知チェーン用）
+        oldRefreshToken.setRevokedAt(Instant.now());
+        oldRefreshToken.setReplacedByTokenHash(hashToken(newRefreshToken.getTokenHash())); // tokenHash は一時的に tokenValue を保持
+        refreshTokenRepository.save(oldRefreshToken);
+
+        // ── 新しいアクセストークン生成（権限を正しく載せる） ──
+        String accessToken = jwtService.generateToken(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        user.getUserId(), null, buildAuthoritiesFromUser(user)));
 
         // 有効ライセンス取得
         List<ApplicationLicense> licenses = licenseRepository.findEffectiveLicenses(
                 user.getUserId(), tenant != null ? tenant.getTenantId() : null, Instant.now());
 
-        log.info("Token refresh successful for user: {}", user.getUserId());
+        log.info("Token refresh successful (rotation) for user: {}", user.getUserId());
 
-        return buildAuthenticationResponse(user, tenant, accessToken, request.getRefreshToken(), licenses);
+        return buildAuthenticationResponse(user, tenant, accessToken, newRefreshToken.getTokenHash(), licenses);
+    }
+
+    /**
+     * ユーザーの全有効トークンを revoke（再利用検知時）
+     */
+    private void revokeAllUserTokens(String userId) {
+        List<RefreshToken> activeTokens = refreshTokenRepository.findAllActiveByUserId(userId);
+        Instant now = Instant.now();
+        for (RefreshToken token : activeTokens) {
+            token.setRevokedAt(now);
+            refreshTokenRepository.save(token);
+        }
+        log.info("Revoked {} active tokens for user: {}", activeTokens.size(), userId);
     }
 
     /**
@@ -686,23 +732,27 @@ public class AuthenticationServiceImpl {
 
     /**
      * RefreshToken作成
-     * 
+     *
      * @param user
      *            ユーザー
      * @param rememberMe
-     *            ログイン状態を永続化するか（true: 90日, false: 1日）
+     *            ログイン状態を永続化するか
+     *            true: auth.jwt.rememberMeRefreshExpiration (デフォルト90日)
+     *            false: auth.jwt.refreshExpiration (デフォルト7日)
      */
     private RefreshToken createRefreshToken(User user, boolean rememberMe) {
         String tokenValue = UUID.randomUUID().toString();
         String tokenHash = hashToken(tokenValue);
 
-        // rememberMeに応じて有効期限を設定
-        long expirationDays = rememberMe ? 90 : 1;
+        // AuthProperties からリフレッシュトークン有効期限を取得
+        long expirationSeconds = rememberMe
+                ? authProperties.getJwt().getRememberMeRefreshExpiration()
+                : authProperties.getJwt().getRefreshExpiration();
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUserId(user.getUserId());
         refreshToken.setTokenHash(tokenHash);
-        refreshToken.setExpiresAt(Instant.now().plus(expirationDays, ChronoUnit.DAYS));
+        refreshToken.setExpiresAt(Instant.now().plusSeconds(expirationSeconds));
         refreshToken.setDeviceInfo("web");
         refreshTokenRepository.save(refreshToken);
 
@@ -712,7 +762,7 @@ public class AuthenticationServiceImpl {
     }
 
     /**
-     * RefreshToken作成（デフォルト: 30日）
+     * RefreshToken作成（デフォルト: 非rememberMe）
      * 後方互換性のためのオーバーロード
      */
     private RefreshToken createRefreshToken(User user) {

@@ -244,11 +244,13 @@ public class WebSecurityConfig {
                     .requestMatchers("/swagger-ui.html").permitAll() // Swagger UI HTML
                     .requestMatchers("/apps/mira/api/health").permitAll(); // Mira Health Check
 
+            // refresh は Cookie の refreshToken で認証するため permitAll
+            authz.requestMatchers("/auth/refresh").permitAll();
+
             // 認証必須エンドポイント
             authz.requestMatchers(
                     "/auth/me",
-                    "/auth/switch-tenant",
-                    "/auth/refresh").authenticated();
+                    "/auth/switch-tenant").authenticated();
 
             // セキュリティ無効時は全てのAPIをパブリックに
             if (!securityProperties.isEnabled()) {
