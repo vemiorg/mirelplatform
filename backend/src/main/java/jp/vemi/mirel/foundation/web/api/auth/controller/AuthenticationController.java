@@ -40,6 +40,9 @@ public class AuthenticationController {
     @Autowired
     private PasswordResetService passwordResetService;
 
+    @Autowired
+    private jp.vemi.mirel.config.properties.AuthProperties authProperties;
+
     /**
      * ログイン
      */
@@ -167,15 +170,34 @@ public class AuthenticationController {
 
     /**
      * トークンリフレッシュ
+     * body の refreshToken を優先し、未指定なら Cookie "refreshToken" にフォールバック。
+     * これにより F5/新規タブ後もメモリが空でも Cookie 経由で refresh 可能。
      */
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticationResponse> refresh(
-            @RequestBody RefreshTokenRequest request,
+            @RequestBody(required = false) RefreshTokenRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
         try {
+            // body から refreshToken を取得、なければ Cookie から取得
+            String refreshTokenValue = (request != null && request.getRefreshToken() != null)
+                    ? request.getRefreshToken()
+                    : resolveRefreshTokenFromCookie(httpRequest);
+
+            if (refreshTokenValue == null || refreshTokenValue.isEmpty()) {
+                logger.warn("Token refresh failed: no refresh token in body or cookie");
+                return ResponseEntity.status(401).build();
+            }
+
+            // 統一した refreshToken を使って request を組み立て
+            if (request == null) {
+                request = new RefreshTokenRequest();
+            }
+            request.setRefreshToken(refreshTokenValue);
+
             AuthenticationResponse response = authenticationService.refresh(request);
 
-            // Set access token in HttpOnly cookie
+            // Set tokens in HttpOnly cookies (access + new refresh after rotation)
             if (response.getTokens() != null) {
                 setTokenCookies(httpResponse, response.getTokens());
             }
@@ -185,6 +207,21 @@ public class AuthenticationController {
             logger.error("Token refresh failed: {}", e.getMessage());
             return ResponseEntity.status(401).build();
         }
+    }
+
+    /**
+     * HttpServletRequest の Cookie から refreshToken を取得
+     */
+    private String resolveRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -419,7 +456,8 @@ public class AuthenticationController {
     }
 
     /**
-     * Set JWT tokens as HttpOnly cookies
+     * Set JWT tokens as HttpOnly cookies.
+     * Cookie maxAge は AuthProperties の値と一致させる。
      */
     private void setTokenCookies(HttpServletResponse response, TokenDto tokens) {
         // Access token cookie (HttpOnly, Secure in production)
@@ -427,7 +465,7 @@ public class AuthenticationController {
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setSecure(false); // Set true in production with HTTPS
         accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60); // 1 hour
+        accessTokenCookie.setMaxAge((int) authProperties.getJwt().getExpiration()); // auth.jwt.expiration (default 1h)
         response.addCookie(accessTokenCookie);
 
         // Refresh token cookie (HttpOnly, Secure in production)
@@ -435,7 +473,7 @@ public class AuthenticationController {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setSecure(false); // Set true in production with HTTPS
         refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7); // 7 days
+        refreshTokenCookie.setMaxAge((int) authProperties.getJwt().getRefreshExpiration()); // auth.jwt.refreshExpiration (default 7d)
         response.addCookie(refreshTokenCookie);
 
         logger.debug("JWT tokens set in HttpOnly cookies");

@@ -39,6 +39,7 @@ public class CookieOrHeaderBearerTokenResolver implements BearerTokenResolver {
             "/auth/logout",
             "/auth/health",
             "/auth/otp/",
+            "/auth/refresh",
             "/auth/verify-setup-token",
             "/auth/setup-account",
             "/api/bootstrap/",

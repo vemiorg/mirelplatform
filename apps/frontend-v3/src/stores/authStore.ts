@@ -3,6 +3,16 @@ import type { OtpPurpose } from '@/lib/api/otp.types';
 import { authApi, type LoginRequest, type SignupRequest, type TokenDto, type TenantContextDto } from '@/lib/api/auth';
 import { getUserProfile, getUserTenants, getUserLicenses, type UserProfile, type TenantInfo, type LicenseInfo } from '@/lib/api/userProfile';
 
+// ── Single-flight guard ──
+// 複数の 401 応答が同時に refreshAccessToken を呼んでも、実際の refresh は 1 回だけ実行される。
+let _refreshPromise: Promise<boolean> | null = null;
+
+// ── Proactive refresh timer ──
+let _proactiveRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** proactive refresh のバッファ秒数（期限の何秒前に更新するか） */
+const PROACTIVE_REFRESH_BUFFER_SEC = 120; // 2分前
+
 /**
  * OTP認証状態
  */
@@ -66,6 +76,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           tokens: response.tokens,
           isAuthenticated: true,
         });
+        // Proactive refresh タイマー起動
+        if (response.tokens?.expiresIn) {
+          scheduleProactiveRefresh(response.tokens.expiresIn);
+        }
         // Login successful, fetch full profile data
         await get().fetchProfile();
       },
@@ -81,11 +95,17 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
           tokens: response.tokens,
           isAuthenticated: true,
         });
+        // Proactive refresh タイマー起動
+        if (response.tokens?.expiresIn) {
+          scheduleProactiveRefresh(response.tokens.expiresIn);
+        }
         await get().fetchProfile();
       },
 
       logout: async () => {
         console.log('[DEBUG logout] Step 1: Starting logout...');
+        // Proactive refresh タイマーをキャンセル
+        cancelProactiveRefresh();
         const { tokens } = get();
         
         console.log('[DEBUG logout] Step 2: Calling logout API (awaiting)...');
@@ -189,6 +209,18 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
             // HttpOnly Cookie 経由で /users/me が成功している時点で認証済み
             isAuthenticated: true,
           });
+
+          // rehydrate 成功 → proactive refresh をスケジュール
+          // access token の正確な残り時間は不明（Cookie HttpOnly）なので、
+          // tokens がメモリにあれば expiresIn を使い、なければ早めに refresh を試みる
+          const tokens = get().tokens;
+          if (tokens?.expiresIn) {
+            scheduleProactiveRefresh(tokens.expiresIn);
+          } else {
+            // Cookie から復元した場合、access token の残り時間が不明。
+            // 安全のため 5 分後に proactive refresh を試みる。
+            scheduleProactiveRefresh(300);
+          }
         } catch (error) {
           console.error('Failed to rehydrate auth store from server session', error);
           // 401 などの場合は呼び出し側 (authLoader) でリダイレクト制御を行う
@@ -212,30 +244,52 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       },
 
       /**
-       * リフレッシュトークンを使用してアクセストークンを更新
-       * @returns 更新成功時true、失敗時false
+       * リフレッシュトークンを使用してアクセストークンを更新（single-flight）
+       *
+       * - 同時に複数呼ばれても実際の API コールは 1 回だけ（single-flight ガード）
+       * - メモリに refreshToken があれば body に載せる
+       * - メモリに無い場合（F5/新タブ）は空 body で POST → バックエンドが Cookie から読む
+       * - 成功後に proactive refresh タイマーを再スケジュール
+       *
+       * @returns 更新成功時 true、失敗時 false
        */
       refreshAccessToken: async () => {
-        try {
-          const { tokens } = get();
-          if (!tokens?.refreshToken) {
-            console.log('[Auth] No refresh token available');
-            return false;
-          }
-
-          console.log('[Auth] Refreshing access token...');
-          const response = await authApi.refreshToken(tokens.refreshToken);
-          // refreshTokenはTokenDtoを直接返す
-          set({
-            tokens: response,
-          });
-          
-          console.log('[Auth] Access token refreshed successfully');
-          return true;
-        } catch (error) {
-          console.error('[Auth] Failed to refresh access token', error);
-          return false;
+        // single-flight: 進行中の refresh があればそれを待つ
+        if (_refreshPromise) {
+          console.log('[Auth] Refresh already in flight, waiting...');
+          return _refreshPromise;
         }
+
+        _refreshPromise = (async () => {
+          try {
+            const { tokens } = get();
+            // メモリに refreshToken があれば使う、なければ Cookie にフォールバック（body 空）
+            const refreshTokenValue = tokens?.refreshToken;
+
+            console.log('[Auth] Refreshing access token...', {
+              hasMemoryToken: !!refreshTokenValue,
+              fallbackToCookie: !refreshTokenValue,
+            });
+
+            const response = await authApi.refreshToken(refreshTokenValue);
+
+            // rotation 後の新トークンをストアに反映
+            set({ tokens: response });
+
+            // proactive refresh タイマーを再スケジュール
+            scheduleProactiveRefresh(response.expiresIn);
+
+            console.log('[Auth] Access token refreshed successfully (rotation applied)');
+            return true;
+          } catch (error) {
+            console.error('[Auth] Failed to refresh access token', error);
+            return false;
+          } finally {
+            _refreshPromise = null;
+          }
+        })();
+
+        return _refreshPromise;
       },
 
       updateUser: (updatedUser: Partial<UserProfile>) => {
@@ -271,6 +325,50 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       },
     })
 );
+
+/**
+ * Proactive refresh: access token の有効期限の数分前にバックグラウンドで refresh を実行。
+ * これにより「リクエスト失敗 → 401 → リトライ」のラグを回避する。
+ *
+ * @param expiresInSec access token の残り有効期限（秒）
+ */
+function scheduleProactiveRefresh(expiresInSec: number) {
+  // 既存タイマーをクリア
+  if (_proactiveRefreshTimer) {
+    clearTimeout(_proactiveRefreshTimer);
+    _proactiveRefreshTimer = null;
+  }
+
+  // バッファを引いた時間後にリフレッシュ実行
+  const delaySec = Math.max(expiresInSec - PROACTIVE_REFRESH_BUFFER_SEC, 10);
+  console.log(`[Auth] Proactive refresh scheduled in ${delaySec}s (token expires in ${expiresInSec}s)`);
+
+  _proactiveRefreshTimer = setTimeout(async () => {
+    console.log('[Auth] Proactive refresh firing...');
+    const { refreshAccessToken, isAuthenticated } = useAuthStore.getState();
+    if (!isAuthenticated) {
+      console.log('[Auth] Not authenticated, skipping proactive refresh');
+      return;
+    }
+    const success = await refreshAccessToken();
+    if (!success) {
+      console.warn('[Auth] Proactive refresh failed — user may be logged out on next API call');
+    }
+  }, delaySec * 1000);
+}
+
+/** Cancel the proactive refresh timer (on logout). Exported for testing. */
+export function cancelProactiveRefresh() {
+  if (_proactiveRefreshTimer) {
+    clearTimeout(_proactiveRefreshTimer);
+    _proactiveRefreshTimer = null;
+  }
+}
+
+/** Reset the single-flight guard (for testing only). */
+export function _resetRefreshPromise() {
+  _refreshPromise = null;
+}
 
 /**
  * 機密性の高いローカルストレージデータをクリアするヘルパー

@@ -37,4 +37,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Stri
      */
     @Query("DELETE FROM RefreshToken rt WHERE rt.expiresAt < :now OR rt.revokedAt IS NOT NULL")
     void deleteExpiredTokens(@Param("now") Instant now);
+
+    /**
+     * ユーザーの全有効トークンを取得（再利用検知時の一括 revoke 用）
+     */
+    @Query("SELECT rt FROM RefreshToken rt WHERE rt.userId = :userId AND " +
+           "rt.revokedAt IS NULL AND rt.deleteFlag = false")
+    List<RefreshToken> findAllActiveByUserId(@Param("userId") String userId);
 }
