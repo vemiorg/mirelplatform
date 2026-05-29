@@ -27,14 +27,14 @@ repositories {
 
 // Spring AI BOM for dependency management
 ext {
-    springAiVersion = '1.1.6'
+    springAiVersion = '1.1.7'
 }
 
 dependencyManagement {
     imports {
         // 順序重要: 後に宣言した BOM が優先される
         // spring-cloud-gcp が古い google-cloud-vertexai を引き込むため、spring-ai-bom を後に配置
-        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:7.4.6"
+        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:7.4.9"
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
     }
 }
@@ -67,8 +67,8 @@ dependencies {
     }
     implementation 'commons-io:commons-io:2.22.0'
     implementation 'org.freemarker:freemarker:2.3.34'
-    implementation 'com.codeborne:selenide:7.16.1'
-    implementation 'org.hibernate.orm:hibernate-core:6.6.50.Final'
+    implementation 'com.codeborne:selenide:7.16.2'
+    implementation 'org.hibernate.orm:hibernate-core:6.6.51.Final'
     // implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0' // Managed by Spring Boot
     implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
     implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0' // 3.2.xはHibernate 7.0向け、Spring Boot 3.xは3.1.xが必要
@@ -118,7 +118,7 @@ dependencies {
     implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
 
     // AWS SDK for S3 (Cloudflare R2 互換)
-    implementation platform('software.amazon.awssdk:bom:2.44.4')
+    implementation platform('software.amazon.awssdk:bom:2.45.0')
     implementation 'software.amazon.awssdk:s3'
     
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
