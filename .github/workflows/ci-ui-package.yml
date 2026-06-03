@@ -15,6 +15,7 @@ jobs:
   check:
     name: Build & Typecheck
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

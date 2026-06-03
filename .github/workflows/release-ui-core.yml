@@ -27,6 +27,7 @@ jobs:
     # pushイベント、またはマージされたPRの場合のみ実行
     #    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
