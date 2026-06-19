@@ -37,7 +37,7 @@ dependencyManagement {
     imports {
         // 順序重要: 後に宣言した BOM が優先される
         // spring-cloud-gcp が古い google-cloud-vertexai を引き込むため、spring-ai-bom を後に配置
-        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:7.4.6"
+        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:7.4.9"
         mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
     }
 }
