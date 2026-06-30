@@ -7,6 +7,13 @@ settings:
 overrides:
   brace-expansion: ^5.0.6
   ws: ^8.20.1
+  undici: ^8.5.0
+  rollup: ^4.62.2
+  flatted: ^3.4.2
+  '@isaacs/brace-expansion': ^5.0.1
+  lodash: ^4.18.1
+  minimatch: ^10.2.5
+  '@microsoft/api-extractor': ^7.58.9
 
 importers:
 
@@ -1362,7 +1369,7 @@ packages:
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
-      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+      rollup: ^4.62.2
     peerDependenciesMeta:
       rollup:
         optional: true
@@ -3048,19 +3055,19 @@ packages:
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
-  undici@7.25.0:
-    resolution: {integrity: sha512-xXnp4kTyor2Zq+J1FfPI6Eq3ew5h6Vl0F/8d9XU5zZQf1tX9s2Su1/3PiMmUANFULpmksxkClamIZcaUqryHsQ==}
-    engines: {node: '>=20.18.1'}
+  undici@8.5.0:
+    resolution: {integrity: sha512-xamtWoB1EshgjpmlXd7GGm2VfdDtw1+rD8uhry8pSNW3If6S8E0m2T2+orSKeZXEn/aPJMviCpDBA65WJt8zhg==}
+    engines: {node: '>=22.19.0'}
 
   unplugin-dts@1.0.3:
     resolution: {integrity: sha512-/GR887wfG4r1cWyt1UZsLRuMIjsmEbGkS9yJrz+0dsToHAYUD5CTyP3JMGVLv25j9K0mJcwAVvZno/aTuSUvNg==}
     peerDependencies:
-      '@microsoft/api-extractor': '>=7'
+      '@microsoft/api-extractor': ^7.58.9
       '@rspack/core': ^1
       '@vue/language-core': ^3.1.5
       esbuild: '*'
       rolldown: '*'
-      rollup: '>=3'
+      rollup: ^4.62.2
       typescript: '>=4'
       vite: '>=3'
       webpack: ^4 || ^5
@@ -3129,8 +3136,8 @@ packages:
   vite-plugin-dts@5.0.3:
     resolution: {integrity: sha512-gIth6NdCEHWPiiRMCK3N6C8WjvdsrtEQrmsiG8h6Ov+lFP+b07Y+wcs9H0H7n146l0PDTYK4cQN1vgeG1pMdRQ==}
     peerDependencies:
-      '@microsoft/api-extractor': '>=7'
-      rollup: '>=3'
+      '@microsoft/api-extractor': ^7.58.9
+      rollup: ^4.62.2
       vite: '>=3'
     peerDependenciesMeta:
       '@microsoft/api-extractor':
@@ -5621,7 +5628,7 @@ snapshots:
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.1
-      undici: 7.25.0
+      undici: 8.5.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -6186,7 +6193,7 @@ snapshots:
 
   undici-types@8.3.0: {}
 
-  undici@7.25.0: {}
+  undici@8.5.0: {}
 
   unplugin-dts@1.0.3(rolldown@1.1.3)(typescript@6.0.3)(vite@8.1.1(@types/node@26.0.1)(jiti@2.7.0)):
     dependencies:
