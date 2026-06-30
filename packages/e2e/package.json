@@ -15,10 +15,10 @@
     "install:browsers": "playwright install --with-deps"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.3",
-    "@playwright/test": "^1.60.0",
-    "@types/node": "^25.7.0",
-    "axe-core": "^4.11.4",
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.0.1",
+    "axe-core": "^4.12.1",
     "typescript": "^6.0.3"
   },
   "engines": {

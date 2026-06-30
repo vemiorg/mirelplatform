@@ -5,7 +5,25 @@ packages:
   - 'apps/*'
   - 'packages/*'
 
+minimumReleaseAgeExclude:
+  - '@typescript-eslint/eslint-plugin@8.62.1'
+  - '@typescript-eslint/parser@8.62.1'
+  - '@typescript-eslint/project-service@8.62.1'
+  - '@typescript-eslint/scope-manager@8.62.1'
+  - '@typescript-eslint/tsconfig-utils@8.62.1'
+  - '@typescript-eslint/type-utils@8.62.1'
+  - '@typescript-eslint/types@8.62.1'
+  - '@typescript-eslint/typescript-estree@8.62.1'
+  - '@typescript-eslint/utils@8.62.1'
+  - '@typescript-eslint/visitor-keys@8.62.1'
+  - prettier@3.9.4
+  - react-router-dom@7.18.1
+  - react-router@7.18.1
+  - recharts@3.9.1
+  - typescript-eslint@8.62.1
+  - vite@8.1.1
+
 # セキュリティ修正: 推移的依存をパッチ版へ固定（Dependabot 対応 / pnpm 11.5 は overrides を本ファイルで読む）
 overrides:
-  brace-expansion: '^5.0.6'  # GHSA-jxxr-4gwj-5jf2 (Medium)
-  ws: '^8.20.1'              # GHSA-58qx-3vcg-4xpx (Medium)
+  brace-expansion: '^5.0.6' # GHSA-jxxr-4gwj-5jf2 (Medium)
+  ws: '^8.20.1' # GHSA-58qx-3vcg-4xpx (Medium)
