@@ -18,29 +18,8 @@
     "node": ">=22.0.0",
     "pnpm": ">=10"
   },
-  "packageManager": "pnpm@11.5.0",
-  "pnpm": {
-    "overrides": {
-      "undici": "^8.0.0",
-      "rollup": "^4.59.0",
-      "flatted": "^3.4.2",
-      "@isaacs/brace-expansion": "^5.0.1",
-      "lodash": "^4.17.23",
-      "minimatch": "^10.2.3",
-      "@microsoft/api-extractor": "^7.57.0"
-    },
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "react": "19",
-        "react-dom": "19",
-        "eslint-plugin-react-hooks>eslint": ">=10"
-      }
-    },
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  },
+  "packageManager": "pnpm@11.9.0",
   "devDependencies": {
-    "prettier": "^3.8.3"
+    "prettier": "^3.9.4"
   }
 }
