@@ -43,7 +43,7 @@ jobs:
           # Node 22.22.2 の npm 10.9.7 は promise-retry 欠落バグあり (nodejs/node#62425)
           # npm@11.11.0 以降では修正済みのため、22.22.2 でも明示的に 11.x を指定すれば動作する
           # runner image が修正されたら node-version を "22" に戻してよい
-          node-version: "24.15.0"
+          node-version: "24.18.0"
           cache: "pnpm"
 
       - name: Update npm for OIDC provenance support
