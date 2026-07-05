@@ -27,7 +27,7 @@ repositories {
 
 // Spring AI BOM for dependency management
 ext {
-    springAiVersion = '1.1.8'
+    springAiVersion = '2.0.0'
     // セキュリティ修正: Spring Boot 管理下の推移的依存をパッチ版へ上書き（Dependabot 対応）
     set('tomcat.version', '10.1.55')        // CVE: GHSA-5m62-pw8w-7w9f 他 (Critical)
     set('netty.version', '4.1.133.Final')   // CVE: GHSA-57rv-r2g8-2cj3 他 (High)
