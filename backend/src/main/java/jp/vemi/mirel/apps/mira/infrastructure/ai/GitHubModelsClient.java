@@ -20,9 +20,9 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.http.HttpHeaders;
 import org.springframework.ai.retry.RetryUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -85,7 +85,7 @@ public class GitHubModelsClient implements AiProviderClient {
         OpenAiApi openAiApi = new OpenAiApi(
                 config.getBaseUrl(),
                 apiKey,
-                new LinkedMultiValueMap<>(),
+                new HttpHeaders(),
                 "/chat/completions",
                 "/embeddings",
                 safeRestClientBuilder,
