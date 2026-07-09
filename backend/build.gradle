@@ -60,7 +60,7 @@ dependencies {
     implementation 'org.springframework.session:spring-session-data-redis'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
     implementation 'com.h2database:h2:2.4.240'
-    runtimeOnly 'org.postgresql:postgresql:42.7.12'
+    runtimeOnly 'org.postgresql:postgresql:42.7.13'
     // セキュリティ修正: BouncyCastle をパッチ版へ明示固定（GHSA-p93r-85wp-75v3 他, High/Medium）
     implementation 'org.bouncycastle:bcprov-jdk18on:1.84'
     implementation 'org.bouncycastle:bcpkix-jdk18on:1.84'
