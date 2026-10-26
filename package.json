@@ -20,6 +20,6 @@
   },
   "packageManager": "pnpm@11.10.0",
   "devDependencies": {
-    "prettier": "^3.9.9"
+    "prettier": "^3.9.10"
   }
 }
