@@ -73,7 +73,7 @@ dependencies {
     }
     implementation 'commons-io:commons-io:2.22.0'
     implementation 'org.freemarker:freemarker:2.3.35'
-    implementation 'com.codeborne:selenide:7.19.0'
+    implementation 'com.codeborne:selenide:7.19.1'
     implementation 'org.hibernate.orm:hibernate-core:6.6.59.Final'
     // implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0' // Managed by Spring Boot
     implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
