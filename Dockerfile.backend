@@ -28,7 +28,7 @@ RUN JAR_FILE=$(find /workspace/backend/build/libs -name "*.jar" ! -name "*-plain
     echo "Selected JAR: $JAR_FILE"
 
 # Stage 2: Runtime Environment (Alpine Linuxで軽量化)
-FROM eclipse-temurin:25.0.3_9-jre-alpine AS runtime
+FROM eclipse-temurin:25.0.5_8-jre-alpine AS runtime
 
 # タイムゾーン設定
 RUN apk add --no-cache tzdata && \
