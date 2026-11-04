@@ -118,7 +118,7 @@ dependencies {
     implementation 'net.coobird:thumbnailator:0.4.21'
     
     // Markdown Parser for Contextual Chunking
-    implementation 'org.commonmark:commonmark:0.31.0'
+    implementation 'org.commonmark:commonmark:0.32.0'
     
     // Google Cloud Storage (GCS)
     implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
